@@ -23,13 +23,23 @@ st.markdown(
 
 /* 2. 📱 移动端专有响应式适配 (屏幕宽度 <= 768px) */
 @media screen and (max-width: 768px) {
+    /* 1. 专门修复首页标题：允许正常换行、微调字号 */
     .cover-title {
-    font-size: 1.8rem !important;
-    line-height: 1.3 !important;
-    word-break: break-word !important;
-    white-space: normal !important;
-    padding: 0 10px;
-}
+        font-size: 1.55rem !important;  /* 稍微缩小字号，确保正好排成两行 */
+        line-height: 1.4 !important;
+        word-break: normal !important;  /* 允许中文字符正常换行 */
+        white-space: normal !important;
+        padding: 0 5px !important;
+    }
+    
+    /* 2. 首页按钮专用的容器适配 */
+    .cover-btn-container [data-testid="stColumn"] {
+        width: 100% !important;
+        min-width: 100% !important;
+        max-width: 100% !important;
+        flex: 0 0 100% !important;
+    }
+
     .block-container {
         padding-left: 0.6rem !important;
         padding-right: 0.6rem !important;
@@ -44,8 +54,8 @@ st.markdown(
         width: 100% !important;
     }
 
-    /* 核心修复：强行控制每个 Column 在移动端占 50% 宽度 (一排正好两个) */
-    [data-testid="stColumn"] {
+    /* 主页面的表单 Grid 控制：一排两个 (50% 宽度) */
+    .main [data-testid="stColumn"] {
         width: calc(50% - 4px) !important;
         min-width: calc(50% - 4px) !important;
         max-width: calc(50% - 4px) !important;
@@ -77,13 +87,6 @@ st.markdown(
         overflow: hidden !important;
         text-overflow: ellipsis !important;
         margin-bottom: 2px !important;
-    }
-
-    /* 标题防止乱断字 */
-    h1, h2, h3, h4, h5, h6 {
-        word-break: keep-all !important;
-        word-wrap: break-word !important;
-        line-height: 1.3 !important;
     }
 
     /* Metric 卡片字号适配 */
@@ -138,13 +141,14 @@ def get_val(key, default=None):
 
 # ------- 路由A：欢迎封面页 -------
 if st.session_state.page == "cover":
-    st.markdown("<div style='margin-top: 15vh;'></div>", unsafe_allow_html=True)
+    # 顶部留白由 15vh 缩减为 10vh，避免手机屏整体太靠下
+    st.markdown("<div style='margin-top: 10vh;'></div>", unsafe_allow_html=True)
     
-    # 采用自适应单容器，避免移动端三列挤压
+    # 手动用 <br> 严格精准控制 2 行换行
     st.markdown(
         """
-        <div style='text-align:center; max-width: 800px; margin: 0 auto; padding: 20px;'>
-            <h1 class='cover-title' style='color:#1E3A8A; font-weight: 800; margin-bottom: 30px;'>
+        <div style='text-align:center; max-width: 100%; margin: 0 auto; padding: 10px;'>
+            <h1 class='cover-title' style='color:#1E3A8A; font-weight: 800; margin-bottom: 40px;'>
                 心血管-肾脏-代谢综合征 (CKM)<br>自动分期决策系统
             </h1>
         </div>
@@ -152,11 +156,14 @@ if st.session_state.page == "cover":
         unsafe_allow_html=True
     )
     
-    _, btn_col, _ = st.columns([0.7, 3.4, 0.7])
+    # 增加 class='cover-btn-container'，确保手机端按钮宽度不会被切成 50%
+    st.markdown("<div class='cover-btn-container'>", unsafe_allow_html=True)
+    _, btn_col, _ = st.columns([0.8, 3.4, 0.8])
     with btn_col:
         if st.button("进入系统 ➔", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
+    st.markdown("</div>", unsafe_allow_html=True)
 
 # ------- 路由B：纯净打印预览报告页 -------
 elif st.session_state.page == "print_view":
