@@ -25,39 +25,9 @@ st.markdown(
     line-height: 1.2 !important;
 }
 
-/* 📱 移动端响应式适配 (手机屏宽 <= 768px) */
-@media screen and (max-width: 768px) {
-    /* 强制多列布局自动折行，避免 5 列强行挤在手机屏上 */
-    [data-testid="stHorizontalBlock"] {
-        flex-wrap: wrap !important;
-    }
-    /* 在手机上，让原本极窄的列自动扩展，每行最多占两列或单列 */
-    [data-testid="stColumn"] {
-        flex: 1 1 45% !important;
-        min-width: 140px !important;
-        margin-bottom: 8px !important;
-    }
-    /* 压缩页面整体内边距，释放屏幕空间 */
-    .block-container {
-        padding-left: 0.8rem !important;
-        padding-right: 0.8rem !important;
-        padding-top: 1rem !important;
-    }
-    /* 适配输入框及下拉菜单字体大小，防止输入值看不清 */
-    input, select, .stSelectbox, [data-baseweb="input"] {
-        font-size: 14px !important;
-    }
-    div[data-baseweb="input"] input {
-        padding: 6px 8px !important;
-    }
-    /* 标签文字字号优化 */
-    label p {
-        font-size: 13px !important;
-    }
-}
-
 /* 🖨️ 打印媒体查询 - 紧凑型1页纸布局方案 */
 @media print {
+    /* 隐藏 Streamlit 原生组件及非打印元素 */
     header, footer, [data-testid="stHeader"], .no-print, button, iframe, [data-testid="element-container"]:has(.no-print) {
         display: none !important;
         height: 0 !important;
@@ -87,7 +57,6 @@ st.markdown(
 </style>
 """, unsafe_allow_html=True
 )
-
 # ==========================================
 # 2. 状态初始化与辅助函数
 # ==========================================
@@ -130,7 +99,7 @@ elif st.session_state.page == "print_view":
         "低密度脂蛋白": (get_val("p_ldl"), "mmol/L", "%.2f"),
         "高密度脂蛋白": (get_val("p_hdl"), "mmol/L", "%.2f"),
         "B型脑钠肽前体": (get_val("p_bnp"), "pg/mL", "%.0f"),
-        "肌酐": (get_val("p_scr"), "μmol/L", "%.0f"),
+        "肌酐": (get_val("p_scr"), "μmol/L", "%.1f"),
         "胱抑素C": (get_val("p_cysc"), "mg/L", "%.2f"),
         "尿白蛋白肌酐比": (get_val("p_uacr"), "mg/g", "%.2f"),
         "肌钙蛋白T": (get_val("p_ctnt"), "ng/mL", "%.3f"),
