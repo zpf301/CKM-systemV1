@@ -282,20 +282,23 @@ elif st.session_state.page == "print_view":
             st.session_state.page = "main"
             st.session_state.is_locked = False
             st.rerun()
-            
     with c2:
-        # 利用 Streamlit 原生按钮结合组件回调唤起 parent 打印
-        if st.button("🖨️ 打印结果", type="primary", use_container_width=True):
+        # 点击 Streamlit 原生按钮后，向顶级窗口注入 JS 触发全局打印
+        if st.button("🖨️ 立即打印", type="primary", use_container_width=True):
             components.html(
                 """
                 <script>
-                    window.parent.print();
+                    // 延迟 100ms 确保页面 DOM 完全绘制后再唤起打印预览
+                    setTimeout(function() {
+                        window.parent.focus();
+                        window.parent.print();
+                    }, 50);
                 </script>
                 """,
                 height=0,
                 width=0
-            )
-
+            )        
+    
 # ------- 路由C：主计算输入表单页 -------
 else:
     st.markdown("### 📋 基础患者信息")
