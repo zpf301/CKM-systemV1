@@ -283,22 +283,43 @@ elif st.session_state.page == "print_view":
             st.session_state.is_locked = False
             st.rerun()
     with c2:
-        # 点击 Streamlit 原生按钮后，向顶级窗口注入 JS 触发全局打印
-        if st.button("🖨️ 立即打印", type="primary", use_container_width=True):
-            components.html(
-                """
-                <script>
-                    // 延迟 100ms 确保页面 DOM 完全绘制后再唤起打印预览
-                    setTimeout(function() {
-                        window.parent.focus();
+        components.html(
+            """
+            <style>
+                .print-btn {
+                    width: 100%;
+                    background-color: #FF4B4B;
+                    color: white;
+                    padding: 8px 16px;
+                    border: none;
+                    border-radius: 8px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    font-weight: bold;
+                    height: 38px;
+                    transition: background-color 0.2s;
+                }
+                .print-btn:hover {
+                    background-color: #D33636;
+                }
+            </style>
+            <button class="print-btn" onclick="triggerOnlinePrint()">🖨️ 立即打印</button>
+
+            <script>
+                function triggerOnlinePrint() {
+                    try {
+                        // 1. 优先尝试直接唤起父级打印
                         window.parent.print();
-                    }, 50);
-                </script>
-                """,
-                height=0,
-                width=0
-            )        
-    
+                    } catch (e) {
+                        // 2. 如果被 GitHub 跨域策略拦截，自动退回到当前窗口/沙盒打印
+                        window.focus();
+                        window.print();
+                    }
+                }
+            </script>
+            """,
+            height=45
+        )
 # ------- 路由C：主计算输入表单页 -------
 else:
     st.markdown("### 📋 基础患者信息")
