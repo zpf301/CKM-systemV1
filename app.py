@@ -10,24 +10,83 @@ st.set_page_config(page_title="心血管-肾脏-代谢综合征(CKM)自动分期
 st.markdown(
 """
 <style>
-/* 统一步骤及表单元素顶部对齐 */
+/* 1. 全局及 Streamlit 原生容器修复 */
+.main .block-container {
+    padding-top: 1.2rem !important;
+    padding-bottom: 2rem !important;
+    max-width: 100% !important;
+}
+
 [data-testid="stFormRow"], [data-testid="stHorizontalBlock"] {
     align-items: flex-start !important;
 }
-[data-testid="stColumn"] {
-    min-width: 0 !important;
-}
-/* 优化看板文字 */
-[data-testid="stMetricValue"] {
-    font-size: calc(1.2rem + 0.6vw) !important;
-    word-break: break-all !important;
-    white-space: normal !important;
-    line-height: 1.2 !important;
+
+/* 2. 📱 移动端专有响应式适配 (屏幕宽度 <= 768px) */
+@media screen and (max-width: 768px) {
+    .block-container {
+        padding-left: 0.6rem !important;
+        padding-right: 0.6rem !important;
+    }
+
+    /* 核心修复：强行重置 Streamlit 的横向 Block 为 Flex 换行模式 */
+    [data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        gap: 8px 8px !important;
+        width: 100% !important;
+    }
+
+    /* 核心修复：强行控制每个 Column 在移动端占 50% 宽度 (一排正好两个) */
+    [data-testid="stColumn"] {
+        width: calc(50% - 4px) !important;
+        min-width: calc(50% - 4px) !important;
+        max-width: calc(50% - 4px) !important;
+        flex: 0 0 calc(50% - 4px) !important;
+        margin-bottom: 4px !important;
+    }
+
+    /* 如果 Column 内只有 checkbox，也保持良好排列 */
+    [data-testid="stColumn"] [data-testid="stCheckbox"] {
+        padding-top: 4px;
+    }
+
+    /* 解决输入框文字太小/截断问题 */
+    div[data-baseweb="input"] {
+        width: 100% !important;
+    }
+    
+    div[data-baseweb="input"] input {
+        font-size: 14px !important;
+        padding: 6px 6px !important;
+        height: 38px !important;
+    }
+    
+    /* Input 标签文字规范 */
+    label p {
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin-bottom: 2px !important;
+    }
+
+    /* 标题防止乱断字 */
+    h1, h2, h3, h4, h5, h6 {
+        word-break: keep-all !important;
+        word-wrap: break-word !important;
+        line-height: 1.3 !important;
+    }
+
+    /* Metric 卡片字号适配 */
+    [data-testid="stMetricValue"] {
+        font-size: 1.0rem !important;
+    }
 }
 
-/* 🖨️ 打印媒体查询 - 紧凑型1页纸布局方案 */
+/* 3. 🖨️ 打印媒体查询 */
 @media print {
-    /* 隐藏 Streamlit 原生组件及非打印元素 */
     header, footer, [data-testid="stHeader"], .no-print, button, iframe, [data-testid="element-container"]:has(.no-print) {
         display: none !important;
         height: 0 !important;
@@ -37,8 +96,7 @@ st.markdown(
     
     html, body, .stApp, .print-report-container {
         height: auto !important;
-        max-height: 99vh !important;
-        overflow: hidden !important;
+        overflow: visible !important;
         font-size: 12px !important;
         background-color: #ffffff !important;
     }
