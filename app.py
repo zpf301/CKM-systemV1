@@ -285,37 +285,34 @@ elif st.session_state.page == "print_view":
     with c2:
         components.html(
             """
-            <style>
-                .print-btn {
-                    width: 100%;
-                    background-color: #FF4B4B;
-                    color: white;
-                    padding: 8px 16px;
-                    border: none;
-                    border-radius: 8px;
-                    cursor: pointer;
-                    font-size: 14px;
-                    font-weight: bold;
-                    height: 38px;
-                    transition: background-color 0.2s;
-                }
-                .print-btn:hover {
-                    background-color: #D33636;
-                }
-            </style>
-            <button class="print-btn" onclick="triggerOnlinePrint()">🖨️ 立即打印</button>
+            <button id="print-btn-action" style="
+                width: 100%;
+                background-color: #FF4B4B;
+                color: white;
+                padding: 8px 16px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: bold;
+                height: 38px;
+                transition: background-color 0.2s;
+            ">
+                🖨️ 立即打印
+            </button>
 
             <script>
-                function triggerOnlinePrint() {
+                document.getElementById('print-btn-action').addEventListener('click', function() {
+                    // 1. 尝试直接唤起父级 Streamlit 窗口的打印预览
                     try {
-                        // 1. 优先尝试直接唤起父级打印
+                        window.parent.focus();
                         window.parent.print();
                     } catch (e) {
-                        // 2. 如果被 GitHub 跨域策略拦截，自动退回到当前窗口/沙盒打印
+                        // 2. 如果遇到跨域安全限制，唤起当前上下文打印
                         window.focus();
                         window.print();
                     }
-                }
+                });
             </script>
             """,
             height=45
