@@ -1,7 +1,6 @@
 import streamlit as st
 import numpy as np
 import streamlit.components.v1 as components
-
 # ==========================================
 # 1. 页面配置与基础样式（深度优化排版间距）
 # ==========================================
@@ -23,16 +22,14 @@ st.markdown(
 
 /* 2. 📱 移动端专有响应式适配 (屏幕宽度 <= 768px) */
 @media screen and (max-width: 768px) {
-    /* 1. 专门修复首页标题：允许正常换行、微调字号 */
     .cover-title {
-        font-size: 1.55rem !important;  /* 稍微缩小字号，确保正好排成两行 */
+        font-size: 1.55rem !important;
         line-height: 1.4 !important;
-        word-break: normal !important;  /* 允许中文字符正常换行 */
+        word-break: normal !important;
         white-space: normal !important;
         padding: 0 5px !important;
     }
     
-    /* 2. 首页按钮专用的容器适配 */
     .cover-btn-container [data-testid="stColumn"] {
         width: 100% !important;
         min-width: 100% !important;
@@ -45,7 +42,6 @@ st.markdown(
         padding-right: 0.6rem !important;
     }
 
-    /* 核心修复：强行重置 Streamlit 的横向 Block 为 Flex 换行模式 */
     [data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -54,7 +50,6 @@ st.markdown(
         width: 100% !important;
     }
 
-    /* 主页面的表单 Grid 控制：一排两个 (50% 宽度) */
     .main [data-testid="stColumn"] {
         width: calc(50% - 4px) !important;
         min-width: calc(50% - 4px) !important;
@@ -63,12 +58,10 @@ st.markdown(
         margin-bottom: 4px !important;
     }
 
-    /* 如果 Column 内只有 checkbox，也保持良好排列 */
     [data-testid="stColumn"] [data-testid="stCheckbox"] {
         padding-top: 4px;
     }
 
-    /* 解决输入框文字太小/截断问题 */
     div[data-baseweb="input"] {
         width: 100% !important;
     }
@@ -79,7 +72,6 @@ st.markdown(
         height: 38px !important;
     }
     
-    /* Input 标签文字规范 */
     label p {
         font-size: 12px !important;
         line-height: 1.2 !important;
@@ -89,7 +81,6 @@ st.markdown(
         margin-bottom: 2px !important;
     }
 
-    /* Metric 卡片字号适配 */
     [data-testid="stMetricValue"] {
         font-size: 1.0rem !important;
     }
@@ -97,7 +88,7 @@ st.markdown(
 
 /* 3. 🖨️ 打印媒体查询 */
 @media print {
-    header, footer, [data-testid="stHeader"], .no-print, button, iframe, [data-testid="element-container"]:has(.no-print) {
+    header, footer, [data-testid="stHeader"], [data-testid="stToolbar"], .no-print, button, iframe, [data-testid="element-container"]:has(.no-print) {
         display: none !important;
         height: 0 !important;
         margin: 0 !important;
@@ -107,7 +98,7 @@ st.markdown(
     html, body, .stApp, .print-report-container {
         height: auto !important;
         overflow: visible !important;
-        font-size: 12px !important;
+        font-size: 12pt !important;
         background-color: #ffffff !important;
     }
     
@@ -118,13 +109,14 @@ st.markdown(
     }
     
     @page {
-        margin: 8mm 12mm 8mm 12mm;
+        margin: 10mm;
         size: auto;
     }
 }
 </style>
 """, unsafe_allow_html=True
 )
+
 # ==========================================
 # 2. 状态初始化与辅助函数
 # ==========================================
@@ -141,10 +133,8 @@ def get_val(key, default=None):
 
 # ------- 路由A：欢迎封面页 -------
 if st.session_state.page == "cover":
-    # 顶部留白由 15vh 缩减为 10vh，避免手机屏整体太靠下
     st.markdown("<div style='margin-top: 10vh;'></div>", unsafe_allow_html=True)
     
-    # 手动用 <br> 严格精准控制 2 行换行
     st.markdown(
         """
         <div style='text-align:center; max-width: 100%; margin: 0 auto; padding: 10px;'>
@@ -156,7 +146,6 @@ if st.session_state.page == "cover":
         unsafe_allow_html=True
     )
     
-    # 增加 class='cover-btn-container'，确保手机端按钮宽度不会被切成 50%
     st.markdown("<div class='cover-btn-container'>", unsafe_allow_html=True)
     _, btn_col, _ = st.columns([0.8, 3.4, 0.8])
     with btn_col:
@@ -257,25 +246,9 @@ elif st.session_state.page == "print_view":
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # 【核心修改点】使用原生的 HTML 按钮结合 JS 唤起系统打印 window.parent.print()
-    st.markdown("""
-    <br>
-    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
-        <a href="javascript:void(0)" onclick="window.parent.postMessage({type: 'streamlit:rerun'}, '*');" 
-           style="text-decoration:none; width:45%;">
-        </a>
-    </div>
-    """, unsafe_allow_html=True)
-
-    st.markdown("""
-        <script>
-            function triggerPrint() {
-                window.parent.focus();
-                window.parent.print();
-            }
-        </script>
-    """, unsafe_allow_html=True)
-
+    # 底部控制区（打印时通过 class="no-print" 自动隐藏）
+    # 底部控制区（打印时通过 class="no-print" 自动隐藏）
+    st.markdown('<div class="no-print">', unsafe_allow_html=True)
     c1, _, c2 = st.columns([4, 2, 4])
     with c1:
         if st.button("⬅️ 返回修改数据", use_container_width=True):
@@ -283,39 +256,32 @@ elif st.session_state.page == "print_view":
             st.session_state.is_locked = False
             st.rerun()
     with c2:
+        # 1. 使用原生 st.button，保证 UI 渲染与点击响应 100% 正常
+        if st.button("🖨️ 立即打印", type="primary", use_container_width=True):
+            st.session_state.do_print = True
+
+    st.markdown('</div>', unsafe_allow_html=True)
+
+    # 2. 当点击打印时，通过 components.html 注入唤起打印的代码
+    if st.session_state.get("do_print", False):
+        st.session_state.do_print = False  # 重置状态
         components.html(
             """
-            <button id="print-btn-action" style="
-                width: 100%;
-                background-color: #FF4B4B;
-                color: white;
-                padding: 8px 16px;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 14px;
-                font-weight: bold;
-                height: 38px;
-                transition: background-color 0.2s;
-            ">
-                🖨️ 立即打印
-            </button>
-
             <script>
-                document.getElementById('print-btn-action').addEventListener('click', function() {
-                    // 1. 尝试直接唤起父级 Streamlit 窗口的打印预览
+                // 延迟 100ms 确保页面渲染完毕后，穿透唤起最顶层窗口打印
+                setTimeout(function() {
                     try {
+                        window.top.focus();
+                        window.top.print();
+                    } catch (e) {
                         window.parent.focus();
                         window.parent.print();
-                    } catch (e) {
-                        // 2. 如果遇到跨域安全限制，唤起当前上下文打印
-                        window.focus();
-                        window.print();
                     }
-                });
+                }, 100);
             </script>
             """,
-            height=45
+            height=0,
+            width=0
         )
 # ------- 路由C：主计算输入表单页 -------
 else:
