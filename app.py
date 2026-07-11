@@ -23,6 +23,13 @@ st.markdown(
 
 /* 2. 📱 移动端专有响应式适配 (屏幕宽度 <= 768px) */
 @media screen and (max-width: 768px) {
+    .cover-title {
+    font-size: 1.8rem !important;
+    line-height: 1.3 !important;
+    word-break: break-word !important;
+    white-space: normal !important;
+    padding: 0 10px;
+}
     .block-container {
         padding-left: 0.6rem !important;
         padding-right: 0.6rem !important;
@@ -131,10 +138,22 @@ def get_val(key, default=None):
 
 # ------- 路由A：欢迎封面页 -------
 if st.session_state.page == "cover":
-    st.markdown("<br><br><br>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([0.7, 3.4, 0.7])
-    with col2:
-        st.markdown("<h1 style='text-align:center; color:#1E3A8A;'>心血管-肾脏-代谢综合征(CKM)自动分期决策系统</h1>", unsafe_allow_html=True)
+    st.markdown("<div style='margin-top: 15vh;'></div>", unsafe_allow_html=True)
+    
+    # 采用自适应单容器，避免移动端三列挤压
+    st.markdown(
+        """
+        <div style='text-align:center; max-width: 800px; margin: 0 auto; padding: 20px;'>
+            <h1 class='cover-title' style='color:#1E3A8A; font-weight: 800; margin-bottom: 30px;'>
+                心血管-肾脏-代谢综合征 (CKM)<br>自动分期决策系统
+            </h1>
+        </div>
+        """, 
+        unsafe_allow_html=True
+    )
+    
+    _, btn_col, _ = st.columns([0.7, 3.4, 0.7])
+    with btn_col:
         if st.button("进入系统 ➔", use_container_width=True, type="primary"):
             st.session_state.page = "main"
             st.rerun()
@@ -194,7 +213,7 @@ elif st.session_state.page == "print_view":
     else:
         st.markdown("<p style='color:#6B7280; font-size:0.85rem; margin-bottom:12px;'>未勾选相关疾病史及危险因素（无既往特殊病史）</p>", unsafe_allow_html=True)
     
-    st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>🧪 生理指标与检验结果清单</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>🧪 生理指标与检验结果</h5>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top:0; margin-bottom:8px; border-top:1px solid #D1D5DB;'>", unsafe_allow_html=True)
     
     items = list(labs.items())
@@ -212,7 +231,7 @@ elif st.session_state.page == "print_view":
     html_grid += "</table>"
     st.markdown(html_grid, unsafe_allow_html=True)
     
-    st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>📊 诊断风险预测与分期结论</h5>", unsafe_allow_html=True)
+    st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>📊 风险预测与分期结论</h5>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top:0; margin-bottom:8px; border-top:1px solid #D1D5DB;'>", unsafe_allow_html=True)
     
     final_stage = get_val("saved_ckm_stage", "待评估")
@@ -241,33 +260,34 @@ elif st.session_state.page == "print_view":
     </div>
     """, unsafe_allow_html=True)
 
-    c1, _, c2 = st.columns([3, 5, 3])
+    st.markdown("""
+        <script>
+            function triggerPrint() {
+                window.parent.focus();
+                window.parent.print();
+            }
+        </script>
+    """, unsafe_allow_html=True)
+
+    c1, _, c2 = st.columns([4, 2, 4])
     with c1:
         if st.button("⬅️ 返回修改数据", use_container_width=True):
             st.session_state.page = "main"
             st.session_state.is_locked = False
             st.rerun()
+            
     with c2:
-        # 采用原生 JavaScript 调用打印，解决 components.html 的 iframe 穿透与渲染时机问题
-        components.html(
-            """
-            <button onclick="window.parent.print()" style="
-                width: 100%;
-                background-color: #FF4B4B;
-                color: white;
-                padding: 10px 24px;
-                margin: 0px;
-                border: none;
-                border-radius: 8px;
-                cursor: pointer;
-                font-size: 16px;
-                font-weight: bold;
-            ">
-            🖨️ 立即打印
-            </button>
-            """,
-            height=50
-        )
+        # 利用 Streamlit 原生按钮结合组件回调唤起 parent 打印
+        if st.button("🖨️ 打印结果", type="primary", use_container_width=True):
+            components.html(
+                """
+                <script>
+                    window.parent.print();
+                </script>
+                """,
+                height=0,
+                width=0
+            )
 
 # ------- 路由C：主计算输入表单页 -------
 else:
