@@ -25,6 +25,37 @@ st.markdown(
     line-height: 1.2 !important;
 }
 
+/* 📱 移动端响应式适配 (手机屏宽 <= 768px) */
+@media screen and (max-width: 768px) {
+    /* 强制多列布局自动折行，避免 5 列强行挤在手机屏上 */
+    [data-testid="stHorizontalBlock"] {
+        flex-wrap: wrap !important;
+    }
+    /* 在手机上，让原本极窄的列自动扩展，每行最多占两列或单列 */
+    [data-testid="stColumn"] {
+        flex: 1 1 45% !important;
+        min-width: 140px !important;
+        margin-bottom: 8px !important;
+    }
+    /* 压缩页面整体内边距，释放屏幕空间 */
+    .block-container {
+        padding-left: 0.8rem !important;
+        padding-right: 0.8rem !important;
+        padding-top: 1rem !important;
+    }
+    /* 适配输入框及下拉菜单字体大小，防止输入值看不清 */
+    input, select, .stSelectbox, [data-baseweb="input"] {
+        font-size: 14px !important;
+    }
+    div[data-baseweb="input"] input {
+        padding: 6px 8px !important;
+    }
+    /* 标签文字字号优化 */
+    label p {
+        font-size: 13px !important;
+    }
+}
+
 /* 🖨️ 打印媒体查询 - 紧凑型1页纸布局方案 */
 @media print {
     header, footer, [data-testid="stHeader"], .no-print, button, iframe, [data-testid="element-container"]:has(.no-print) {
@@ -34,12 +65,12 @@ st.markdown(
         padding: 0 !important;
     }
     
-    /* 2. 核心修复：强行截断超出第一页的任何透明高度尾巴，彻底封杀空白第二页 */
     html, body, .stApp, .print-report-container {
         height: auto !important;
-        max-height: 99vh !important; /* 绝不允许超出视口高度 */
-        overflow: hidden !important;  /* 强行切断溢出的空白滚动条 */
-        font-size: 13px !important;
+        max-height: 99vh !important;
+        overflow: hidden !important;
+        font-size: 12px !important;
+        background-color: #ffffff !important;
     }
     
     .print-report-container {
@@ -48,23 +79,21 @@ st.markdown(
         margin: 0 !important;
     }
     
-    /* 3. 强力控制纸张边距 */
     @page {
-        margin: 10mm 15mm 10mm 15mm;
+        margin: 8mm 12mm 8mm 12mm;
         size: auto;
     }
 }
 </style>
 """, unsafe_allow_html=True
 )
+
 # ==========================================
 # 2. 状态初始化与辅助函数
 # ==========================================
 if "page" not in st.session_state: st.session_state.page = "cover"
 if "is_locked" not in st.session_state: st.session_state.is_locked = False
-if "trigger_print" not in st.session_state: st.session_state.trigger_print = False
 
-# 安全获取 Session State 数值的辅助函数
 def get_val(key, default=None):
     val = st.session_state.get(key)
     return val if val is not None else default
@@ -83,7 +112,7 @@ if st.session_state.page == "cover":
             st.session_state.page = "main"
             st.rerun()
 
-# ------- 路由B：纯净打印预览报告页（优化单页紧凑型） -------
+# ------- 路由B：纯净打印预览报告页 -------
 elif st.session_state.page == "print_view":
     p_name = get_val("p_name", "未填写")
     p_id = get_val("p_id", "未填写")
@@ -109,10 +138,8 @@ elif st.session_state.page == "print_view":
     }
 
     st.markdown('<div class="print-report-container">', unsafe_allow_html=True)
-    # 瘦身修改1：降低题头标题大小，缩小下边距
     st.markdown("<h3 style='text-align:center; color:#1E3A8A; margin-top:5px; margin-bottom:15px; font-size:1.5rem;'>心血管-肾脏-代谢综合征(CKM) 临床评估报告单</h3>", unsafe_allow_html=True)
     
-    # 瘦身修改2：缩小基础信息表格高度和间距
     st.markdown(f"""
     <table style='width:100%; border-collapse: collapse; margin-bottom: 12px; font-size:0.95rem;'>
         <tr style='background-color:#F3F4F6;'>
@@ -123,14 +150,13 @@ elif st.session_state.page == "print_view":
         </tr>
         <tr>
             <td style='border: 1px solid #D1D5DB; padding: 6px 10px; font-weight:bold;'>年龄</td>
-            <td style='border: 1px solid #D1D5DB; padding: 10px;'>{p_age} 岁</td>
+            <td style='border: 1px solid #D1D5DB; padding: 6px 10px;'>{p_age} 岁</td>
             <td style='border: 1px solid #D1D5DB; padding: 6px 10px; font-weight:bold;'>性别</td>
             <td style='border: 1px solid #D1D5DB; padding: 6px 10px;'>{p_gender}</td>
         </tr>
     </table>
     """, unsafe_allow_html=True)
 
-    # 瘦身修改3：收紧确诊病史栏
     st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>📋 已确诊疾病史及临床危险因素</h5>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top:0; margin-bottom:8px; border-top:1px solid #D1D5DB;'>", unsafe_allow_html=True)
     
@@ -141,7 +167,6 @@ elif st.session_state.page == "print_view":
     else:
         st.markdown("<p style='color:#6B7280; font-size:0.85rem; margin-bottom:12px;'>未勾选相关疾病史及危险因素（无既往特殊病史）</p>", unsafe_allow_html=True)
     
-    # 瘦身修改4：压缩生理指标表格内边距、拿掉表格行间的额外空行
     st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>🧪 生理指标与检验结果清单</h5>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top:0; margin-bottom:8px; border-top:1px solid #D1D5DB;'>", unsafe_allow_html=True)
     
@@ -156,11 +181,10 @@ elif st.session_state.page == "print_view":
         for label, (val, unit, fmt) in chunk:
             display = f"{val:{fmt.replace('%','')}} {unit}" if val is not None else "--"
             html_grid += f"<td style='padding:2px 4px 8px 4px; font-size:0.95rem; font-weight:bold; border-bottom:1.5px solid #E5E7EB; color:#000;'>{display}</td>"
-        html_grid += "</tr>" # 删除了此处的空行过渡行，极大节省了空间
+        html_grid += "</tr>"
     html_grid += "</table>"
     st.markdown(html_grid, unsafe_allow_html=True)
     
-    # 瘦身修改5：重构风险分期面板，降低内边距和字号，使其完美合为一页
     st.markdown("<h5 style='margin: 0 0 5px 0; font-size:1.05rem;'>📊 诊断风险预测与分期结论</h5>", unsafe_allow_html=True)
     st.markdown("<hr style='margin-top:0; margin-bottom:8px; border-top:1px solid #D1D5DB;'>", unsafe_allow_html=True)
     
@@ -180,8 +204,16 @@ elif st.session_state.page == "print_view":
     """, unsafe_allow_html=True)
     st.markdown('</div>', unsafe_allow_html=True)
     
-    # 预览界面的底部操作控制条
-    st.markdown("<br><div class='no-print'>", unsafe_allow_html=True)
+    # 【核心修改点】使用原生的 HTML 按钮结合 JS 唤起系统打印 window.parent.print()
+    st.markdown("""
+    <br>
+    <div class="no-print" style="display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+        <a href="javascript:void(0)" onclick="window.parent.postMessage({type: 'streamlit:rerun'}, '*');" 
+           style="text-decoration:none; width:45%;">
+        </a>
+    </div>
+    """, unsafe_allow_html=True)
+
     c1, _, c2 = st.columns([3, 5, 3])
     with c1:
         if st.button("⬅️ 返回修改数据", use_container_width=True):
@@ -189,14 +221,26 @@ elif st.session_state.page == "print_view":
             st.session_state.is_locked = False
             st.rerun()
     with c2:
-        if st.button("🖨️ 立即打印", type="primary", use_container_width=True):
-            st.session_state.trigger_print = True
-            st.rerun()
-    st.markdown("</div>", unsafe_allow_html=True)
-
-    if st.session_state.trigger_print:
-        components.html("<script>setTimeout(function(){ window.parent.print(); }, 300);</script>", height=0)
-        st.session_state.trigger_print = False
+        # 采用原生 JavaScript 调用打印，解决 components.html 的 iframe 穿透与渲染时机问题
+        components.html(
+            """
+            <button onclick="window.parent.print()" style="
+                width: 100%;
+                background-color: #FF4B4B;
+                color: white;
+                padding: 10px 24px;
+                margin: 0px;
+                border: none;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 16px;
+                font-weight: bold;
+            ">
+            🖨️ 立即打印
+            </button>
+            """,
+            height=50
+        )
 
 # ------- 路由C：主计算输入表单页 -------
 else:
@@ -278,7 +322,7 @@ else:
     r5_c1, r5_c2, r5_c3, r5_c4, r5_c5 = st.columns(5)
     with r5_c1: has_chd = st.checkbox("冠心病")
     with r5_c2: has_af = st.checkbox("房颤")
-    with r5_c3: has_stroke_history = st.checkbox("脑梗")
+    with r5_c3: has_stroke_history = st.checkbox("脑梗死")
     with r5_c4: has_hf = st.checkbox("心力衰竭")
     with r5_c5: has_pad = st.checkbox("外周血管疾病")
 
@@ -305,7 +349,7 @@ else:
     with r3_col_b[4]: nt_probnp = st.number_input("N末端B型脑钠肽前体(pg/mL)", min_value=0, max_value=50000, value=None, step=1, format="%d", placeholder="请输入", key="lab_bnp")
     
     r3_col_c = st.columns(5) 
-    with r3_col_c[0]: scr_umol = st.number_input("肌酐(μmol/L)", min_value=5, max_value=3000, value=None, step=1, format="%d", placeholder="请输入", key="lab_scr")
+    with r3_col_c[0]: scr_umol = st.number_input("肌酐(μmol/L)", min_value=5.0, max_value=3000.0, value=None, step=0.1, format="%.1f", placeholder="请输入", key="lab_scr")
     with r3_col_c[1]: cysc = st.number_input("胱抑素C(mg/L)", min_value=0.1, max_value=15.0, value=None, step=0.01, format="%.2f", placeholder="请输入", key="lab_cysc")
     with r3_col_c[2]: uacr = st.number_input("尿微量白蛋白/肌酐比值(mg/g)", min_value=0.0, max_value=5000.0, value=None, step=1.0, format="%.2f", placeholder="请输入", key="lab_uacr")
     with r3_col_c[3]: raw_ctnt = st.number_input("肌钙蛋白T(ng/mL)", min_value=0.0, max_value=50.0, value=None, step=0.001, format="%.3f", placeholder="请输入", key="lab_ctnt")
@@ -494,7 +538,7 @@ else:
             if has_smoke: history_tags.append("吸烟史")
             if has_chd: history_tags.append("冠心病")
             if has_af: history_tags.append("房颤")
-            if has_stroke_history: history_tags.append("脑梗死病史")
+            if has_stroke_history: history_tags.append("脑梗死")
             if has_hf: history_tags.append("心力衰竭")
             if has_pad: history_tags.append("外周血管疾病")
             if has_sub_hf_final: history_tags.append("亚临床心力衰竭")
